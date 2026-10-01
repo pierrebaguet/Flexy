@@ -15,7 +15,10 @@ declare(strict_types=1);
 namespace FlexyBundle\Service;
 
 use FlexyBundle\DTO\ProductDTO;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Thelia\Api\Service\DataAccess\DataAccessService;
+use Thelia\Core\Event\Product\ProductSearchedEvent;
+use Thelia\Domain\Localization\Service\LangService;
 
 /**
  * Single entry point for product search, so swapping in a Thelia search module (TntSearch and the
@@ -30,6 +33,8 @@ final readonly class ProductSearch
     public function __construct(
         private DataAccessService $dataAccessService,
         private ProductSort $productSort,
+        private EventDispatcherInterface $dispatcher,
+        private LangService $langService,
     ) {
     }
 
@@ -60,6 +65,24 @@ final readonly class ProductSearch
     public function count(string $term): int
     {
         return $this->search($term, itemsPerPage: 1)['total'];
+    }
+
+    /**
+     * The count of a search the shopper submitted, told to the modules once with
+     * ProductSearchedEvent so a search log (TntSearch) records the visitors' searches. The
+     * suggestions shown while typing go through search() and are not submitted searches.
+     *
+     * A core older than the event gets the count alone.
+     */
+    public function countSubmitted(string $term): int
+    {
+        $total = $this->count($term);
+
+        if (trim($term) !== '' && class_exists(ProductSearchedEvent::class)) {
+            $this->dispatcher->dispatch(new ProductSearchedEvent(trim($term), (string) $this->langService->getLocale(), $total));
+        }
+
+        return $total;
     }
 
     /**
