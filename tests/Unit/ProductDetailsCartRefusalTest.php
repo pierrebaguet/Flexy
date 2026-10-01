@@ -33,6 +33,7 @@ use Thelia\Domain\Cart\Exception\NotEnoughStockException;
 use Thelia\Domain\Cart\Service\CartItemService;
 use Thelia\Domain\Cart\Service\CartRetriever;
 use Thelia\Domain\Cart\Service\CartSelectionService;
+use Thelia\Domain\Media\AltTextResolver;
 use Thelia\Domain\Shipping\Service\PostageHandler;
 use Thelia\Model\Cart;
 use Thelia\Model\CartItem;
@@ -121,6 +122,7 @@ final class ProductDetailsCartRefusalTest extends TestCase
             new CartFacade($cartItems, self::createStub(CartSelectionService::class), self::createStub(PostageHandler::class), $cartRetriever),
             new RequestStack(),
             new RunningSaleResolver(self::createStub(DataAccessService::class)),
+            new AltTextResolver(),
         );
         $component->setLiveResponder($responder);
         // Virtual: the stock is not checked, which would read the shop configuration.
