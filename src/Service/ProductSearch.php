@@ -23,6 +23,8 @@ use Thelia\Domain\Localization\Service\LangService;
 /**
  * Single entry point for product search, so swapping in a Thelia search module (TntSearch and the
  * like) means reimplementing this class rather than hunting down call sites.
+ * A module that logs its own searches (TntSearch does) would then log each one twice, once
+ * itself and once through the ProductSearchedEvent countSubmitted() dispatches.
  *
  * The API limits what it can do: `title` matches on word starts only ("Claire" misses
  * "Marie-Claire"), nothing but titles is searchable, and the i18n filter has no locale fallback —

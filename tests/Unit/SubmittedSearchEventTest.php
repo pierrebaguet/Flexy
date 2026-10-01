@@ -21,6 +21,8 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 use Thelia\Api\Service\DataAccess\DataAccessService;
 use Thelia\Core\Event\Product\ProductSearchedEvent;
 use Thelia\Domain\Localization\Service\LangService;
@@ -28,7 +30,7 @@ use Thelia\Domain\Localization\Service\LangService;
 /**
  * The search page tells the modules about the search a shopper submitted, once, with the
  * number of products found, so a search log counts the visitors' searches. The suggestions
- * shown while typing and the further pages of the same results are not new searches.
+ * shown while typing, the pages of the same results and a reload of them are not new searches.
  *
  * Skipped on a core that does not ship ProductSearchedEvent yet.
  */
@@ -77,6 +79,34 @@ final class SubmittedSearchEventTest extends TestCase
         self::assertSame([], $this->told);
     }
 
+    public function testBackToTheFirstPageOfTheSameResultsIsNotToldAgain(): void
+    {
+        $this->subheader(new Request(['query' => 'chaussure', 'page' => '1']), hits: 40)->mount('chaussure');
+
+        self::assertSame([], $this->told);
+    }
+
+    public function testAReloadOfTheSameResultsIsNotToldAgain(): void
+    {
+        $session = new Session(new MockArraySessionStorage());
+
+        $this->subheader($this->withSession(new Request(['query' => 'chaussure']), $session), hits: 3)->mount('chaussure');
+        $this->subheader($this->withSession(new Request(['query' => 'chaussure']), $session), hits: 3)->mount('chaussure');
+
+        self::assertCount(1, $this->told);
+    }
+
+    public function testAnotherTermInTheSameSessionIsTold(): void
+    {
+        $session = new Session(new MockArraySessionStorage());
+
+        $this->subheader($this->withSession(new Request(['query' => 'chaussure']), $session), hits: 3)->mount('chaussure');
+        $this->subheader($this->withSession(new Request(['query' => 'botte']), $session), hits: 1)->mount('botte');
+        $this->subheader($this->withSession(new Request(['query' => 'chaussure']), $session), hits: 3)->mount('chaussure');
+
+        self::assertSame(['chaussure', 'botte', 'chaussure'], array_map(static fn (ProductSearchedEvent $event): string => $event->getTerm(), $this->told));
+    }
+
     public function testABlankSearchIsNotTold(): void
     {
         $this->subheader(new Request(['query' => '   ']), hits: 0)->mount('   ');
@@ -89,6 +119,13 @@ final class SubmittedSearchEventTest extends TestCase
         $this->productSearch(hits: 2)->search('chau', itemsPerPage: 5);
 
         self::assertSame([], $this->told);
+    }
+
+    private function withSession(Request $request, Session $session): Request
+    {
+        $request->setSession($session);
+
+        return $request;
     }
 
     private function subheader(Request $request, int $hits): SearchSubheader
