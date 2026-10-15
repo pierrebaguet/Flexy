@@ -39,6 +39,7 @@ use Twig\Environment;
 final class DeliveryBlockedByProductsRenderTest extends IntegrationTestCase
 {
     private const SENTENCE = 'No carrier can ship: %s. Remove them from your cart to complete your order.';
+    private const SENTENCE_ONE = 'No carrier can ship: %s. Remove it from your cart to complete your order.';
     private const GENERIC = 'No delivery method is available for this order.';
 
     protected function setUp(): void
@@ -67,6 +68,20 @@ final class DeliveryBlockedByProductsRenderTest extends IntegrationTestCase
 
         self::assertStringContainsString(\sprintf(self::SENTENCE, 'Garden furnace, Gas cylinder'), $message);
         self::assertStringNotContainsString(self::GENERIC, $message);
+    }
+
+    public function testASingleProductIsAskedToBeRemovedInTheSingular(): void
+    {
+        $factory = $this->createFixtureFactory();
+        $country = $factory->country();
+        $this->serveWithEveryCarrier($country);
+        $cart = $this->cartOf($factory, $country, ['Garden furnace']);
+
+        foreach ($this->carriers() as $carrier) {
+            $this->getService(ProductFacade::class)->excludeDeliveryModule($cart['products'][0]->getId(), $carrier->getId());
+        }
+
+        self::assertStringContainsString(\sprintf(self::SENTENCE_ONE, 'Garden furnace'), $this->deliveryMessage());
     }
 
     public function testATitleIsPrintedAsTextNeverAsMarkup(): void
