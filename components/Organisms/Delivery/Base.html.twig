@@ -93,10 +93,17 @@
                 {% endif %}
             {% endfor %}
         {% else %}
+            {% set blockingProducts = this.productsBlockingEveryCarrier %}
+            {% if blockingProducts is not empty %}
+                {# SnackBar prints its text raw: the titles are the merchant's, escaped one by one before they join the sentence. #}
+                {% set blockingMessage = 'No carrier can ship: %products%. Remove them from your cart to complete your order.'|trans({'%products%': blockingProducts|map(title => title|e)|join(', ')}) %}
+            {% else %}
+                {% set blockingMessage = 'No delivery method is available for this order.'|trans %}
+            {% endif %}
             <twig:Molecules:SnackBar:Base
                 variant="warning"
                 withIcon
-                text="{{ 'No delivery method is available for this order.'|trans }}"
+                text="{{ blockingMessage }}"
             />
         {% endif %}
     </div>
