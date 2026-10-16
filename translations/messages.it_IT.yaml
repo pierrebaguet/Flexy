@@ -118,3 +118,8 @@ Track my package: Traccia il mio pacco
 'No carrier can ship: %products%. Remove it from your cart to complete your order.': "Nessun corriere può spedire: %products%. Rimuovilo dal carrello per completare l'ordine."
 'No carrier can ship: %products%. Remove them from your cart to complete your order.': "Nessun corriere può spedire: %products%. Rimuovili dal carrello per completare l'ordine."
 Currency: Valuta
+'Cannot be delivered to: %destinations%.': "Non può essere consegnato in: %destinations%."
+'Can only be delivered to: %destinations%.': "Consegnabile solo in: %destinations%."
+'This product cannot be delivered to your address.': "Questo prodotto non può essere consegnato al tuo indirizzo."
+'%products% cannot be shipped to this address. Remove it from your cart or choose another address.': "%products% non può essere spedito a questo indirizzo. Rimuovilo dal carrello o scegli un altro indirizzo."
+'%products% cannot be shipped to this address. Remove them from your cart or choose another address.': "%products% non possono essere spediti a questo indirizzo. Rimuovili dal carrello o scegli un altro indirizzo."

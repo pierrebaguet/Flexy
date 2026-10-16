@@ -614,3 +614,8 @@ These items will leave in a later shipment.: These items will leave in a later s
 See my order: See my order
 It is waiting for its payment.: It is waiting for its payment.
 On eligible orders: On eligible orders
+'Cannot be delivered to: %destinations%.': "Cannot be delivered to: %destinations%."
+'Can only be delivered to: %destinations%.': "Can only be delivered to: %destinations%."
+'This product cannot be delivered to your address.': "This product cannot be delivered to your address."
+'%products% cannot be shipped to this address. Remove it from your cart or choose another address.': "%products% cannot be shipped to this address. Remove it from your cart or choose another address."
+'%products% cannot be shipped to this address. Remove them from your cart or choose another address.': "%products% cannot be shipped to this address. Remove them from your cart or choose another address."

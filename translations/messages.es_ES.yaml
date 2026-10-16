@@ -118,3 +118,8 @@ Track my package: Seguir mi paquete
 'No carrier can ship: %products%. Remove it from your cart to complete your order.': "Ningún transportista puede enviar: %products%. Quítelo de su carrito para completar su pedido."
 'No carrier can ship: %products%. Remove them from your cart to complete your order.': "Ningún transportista puede enviar: %products%. Quítelos de su carrito para completar su pedido."
 Currency: Moneda
+'Cannot be delivered to: %destinations%.': "No se puede entregar en: %destinations%."
+'Can only be delivered to: %destinations%.': "Solo se entrega en: %destinations%."
+'This product cannot be delivered to your address.': "Este producto no se puede entregar en su dirección."
+'%products% cannot be shipped to this address. Remove it from your cart or choose another address.': "%products% no se puede enviar a esta dirección. Quítelo de su carrito o elija otra dirección."
+'%products% cannot be shipped to this address. Remove them from your cart or choose another address.': "%products% no se pueden enviar a esta dirección. Quítelos de su carrito o elija otra dirección."
