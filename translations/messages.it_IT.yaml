@@ -123,3 +123,5 @@ Currency: Valuta
 'This product cannot be delivered to your address.': "Questo prodotto non può essere consegnato al tuo indirizzo."
 '%products% cannot be shipped to this address. Remove it from your cart or choose another address.': "%products% non può essere spedito a questo indirizzo. Rimuovilo dal carrello o scegli un altro indirizzo."
 '%products% cannot be shipped to this address. Remove them from your cart or choose another address.': "%products% non possono essere spediti a questo indirizzo. Rimuovili dal carrello o scegli un altro indirizzo."
+'Not available for your address': "Non disponibile per il tuo indirizzo"
+'Nothing was added to your cart: a product cannot be delivered to your address. Remove its line to add the others.': "Nulla è stato aggiunto al carrello: un prodotto non può essere consegnato al tuo indirizzo. Rimuovi la sua riga per aggiungere le altre."

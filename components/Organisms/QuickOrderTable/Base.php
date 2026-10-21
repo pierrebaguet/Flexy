@@ -70,6 +70,9 @@ class Base
 
     public const int EMPTY_ROWS = 1;
 
+    /** The status of a line the destination restrictions of the core keep from the address of the cart. */
+    private const string DESTINATION_REFUSED = 'destination_refused';
+
     /**
      * What the buyer typed. The sale element is the one a reference shared by several
      * of them was settled on; the core checks that it still carries the reference.
@@ -260,10 +263,12 @@ class Base
     {
         $customer = $this->customer();
         $ready = [];
+        $readyIndexes = [];
 
         foreach ($this->rows as $index => $row) {
             if ($this->isReady($index)) {
                 $ready[] = new ReferenceQuantity((string) $row['reference'], (int) $row['quantity'], self::saleElementsIdOf($row));
+                $readyIndexes[] = $index;
             }
         }
 
@@ -290,6 +295,10 @@ class Base
             return;
         }
 
+        if ($this->keepRowsADestinationRefuses($table, $readyIndexes)) {
+            return;
+        }
+
         $this->addedCount = \count(array_filter($table->lines, static fn ($line): bool => $line->added));
 
         $this->tellThePageWhatWasAdded($table);
@@ -306,6 +315,41 @@ class Base
 
         $this->rows = [] === $rows ? self::emptyRows(self::EMPTY_ROWS) : $rows;
         $this->lines = [] === $rows ? [] : $lines;
+    }
+
+    /**
+     * A line the destination restrictions keep from the address of the cart: the core added none of the
+     * table, so every row stays, each with the line the core answered, for the buyer to remove the refused
+     * one and add the others again. The status is compared as a string: a core without the restrictions
+     * never answers it.
+     *
+     * @param list<int> $readyIndexes the rows sent, in the order they were sent
+     */
+    private function keepRowsADestinationRefuses(QuickOrderTable $table, array $readyIndexes): bool
+    {
+        $answered = $table->toArray()['lines'];
+
+        if ([] === array_filter($answered, static fn (array $line): bool => self::DESTINATION_REFUSED === $line['status'])) {
+            return false;
+        }
+
+        $byReference = [];
+
+        foreach ($answered as $line) {
+            $byReference[mb_strtolower((string) $line['reference'])] = $line;
+        }
+
+        foreach ($readyIndexes as $index) {
+            $line = $byReference[mb_strtolower(trim((string) $this->rows[$index]['reference']))] ?? null;
+
+            if (null !== $line) {
+                $this->lines[$index] = $line;
+            }
+        }
+
+        $this->error = 'destination_refused';
+
+        return true;
     }
 
     /**

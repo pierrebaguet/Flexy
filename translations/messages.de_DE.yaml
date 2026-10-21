@@ -596,3 +596,5 @@ On eligible orders: Für berechtigte Bestellungen
 'This product cannot be delivered to your address.': "Dieses Produkt kann nicht an Ihre Adresse geliefert werden."
 '%products% cannot be shipped to this address. Remove it from your cart or choose another address.': "%products% kann nicht an diese Adresse versendet werden. Entfernen Sie den Artikel aus Ihrem Warenkorb oder wählen Sie eine andere Adresse."
 '%products% cannot be shipped to this address. Remove them from your cart or choose another address.': "%products% können nicht an diese Adresse versendet werden. Entfernen Sie die Artikel aus Ihrem Warenkorb oder wählen Sie eine andere Adresse."
+'Not available for your address': "Für Ihre Adresse nicht verfügbar"
+'Nothing was added to your cart: a product cannot be delivered to your address. Remove its line to add the others.': "Nichts wurde in Ihren Warenkorb gelegt: Ein Produkt kann nicht an Ihre Adresse geliefert werden. Entfernen Sie seine Zeile, um die anderen hinzuzufügen."

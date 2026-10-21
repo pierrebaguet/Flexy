@@ -7,6 +7,7 @@
     unknown: 'error',
     unavailable: 'error',
     quantity_refused: 'warning',
+    destination_refused: 'error',
 } %}
 {% set statusLabels = {
     resolved: 'Ready'|trans,
@@ -14,6 +15,7 @@
     unknown: 'Unknown reference'|trans,
     unavailable: 'Unavailable'|trans,
     quantity_refused: 'Quantity not available'|trans,
+    destination_refused: 'Not available for your address'|trans,
 } %}
 {% set errorMessages = {
     rate_limited: 'Too many checks in a short time. Please wait a minute and try again.'|trans,
@@ -22,6 +24,7 @@
     nothing_to_save: 'There is no line to save: type a reference and a whole quantity above zero.'|trans,
     list_refused: 'The list could not be saved: its name is empty or longer than 255 characters, or the account already keeps 100 lists.'|trans,
     cart_refused: 'None of these lines could be added to your cart.'|trans,
+    destination_refused: 'Nothing was added to your cart: a product cannot be delivered to your address. Remove its line to add the others.'|trans,
 } %}
 {% set maxQuantity = constant('Thelia\\Domain\\Catalog\\DTO\\ReferenceQuantityLines::MAX_QUANTITY')|format_number %}
 {% set rejectReasons = {
@@ -173,6 +176,9 @@
                                 <twig:Molecules:Tag:Base color="{{ statusColors[line.status]|default('neutral') }}" customText="{{ statusLabels[line.status]|default('') }}" />
                                 {% if line.status == 'quantity_refused' and line.availableQuantity is not null %}
                                     <span class="QuickOrderTable-detail">{{ '%quantity% in stock'|trans({'%quantity%': line.availableQuantity|round(0, 'floor')}) }}</span>
+                                {% endif %}
+                                {% if line.status == 'destination_refused' and line.refusalReason|default(null) %}
+                                    <span class="QuickOrderTable-detail" data-testid="quick-order-destination-reason">{{ line.refusalReason }}</span>
                                 {% endif %}
                             {% elseif typed %}
                                 <twig:Molecules:Tag:Base color="neutral" customText="{{ 'To check'|trans }}" />
