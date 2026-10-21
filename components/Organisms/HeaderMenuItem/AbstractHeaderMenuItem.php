@@ -26,9 +26,13 @@ abstract class AbstractHeaderMenuItem
     /**
      * Resolves title/publicUrl via resources() only if not already provided.
      *
-     * @return array{0: string, 1: string} [title, href]
+     * Null when the shop does not serve the entity: resources() hands back null for an item the
+     * front API answers 404 for (a hidden category, a folder that is not published), and the
+     * header leaves such an entry out rather than draw it without a title or a link.
+     *
+     * @return array{0: string, 1: string}|null [title, href]
      */
-    protected function resolveTitleAndHref(string $endpoint, int|string|null $id, ?string $title, ?string $href): array
+    protected function resolveTitleAndHref(string $endpoint, int|string|null $id, ?string $title, ?string $href): ?array
     {
         if ($title !== null && $href !== null) {
             return [$title, $href];
@@ -39,6 +43,10 @@ abstract class AbstractHeaderMenuItem
         }
 
         $entity = $this->dataAccessService->resources($endpoint.'/'.$id);
+
+        if (!\is_array($entity)) {
+            return null;
+        }
 
         return [
             $title ?? ($entity['i18ns']['title'] ?? ''),
