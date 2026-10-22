@@ -18,6 +18,9 @@ use Thelia\Api\Service\DataAccess\DataAccessService;
 
 abstract class AbstractHeaderMenuItem
 {
+    /** False when the shop does not serve the entity: the entry is left out of the header. */
+    public bool $served = true;
+
     public function __construct(
         protected readonly DataAccessService $dataAccessService,
     ) {
@@ -44,7 +47,7 @@ abstract class AbstractHeaderMenuItem
 
         $entity = $this->dataAccessService->resources($endpoint.'/'.$id);
 
-        if (!\is_array($entity)) {
+        if (null === $entity) {
             return null;
         }
 

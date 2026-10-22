@@ -29,9 +29,6 @@ class Category extends AbstractHeaderMenuItem
     public array $leafLinks = [];
     public bool $showSeeMore = false;
 
-    /** False when the shop does not serve the category: the entry is left out of the header. */
-    public bool $served = true;
-
     public function __construct(
         DataAccessService $dataAccessService,
         private readonly NavigationTree $navigationTree,
