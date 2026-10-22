@@ -17,6 +17,8 @@ namespace FlexyBundle\Tests\Component;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\UX\TwigComponent\ComponentRendererInterface;
 use Thelia\Api\Bridge\Propel\Extension\ContentPublicationExtension;
+use Thelia\Core\Content\Slot\NativeContentSlotResolver;
+use Thelia\Model\ConfigQuery;
 use Thelia\Test\IntegrationTestCase;
 
 /**
@@ -52,6 +54,29 @@ final class HeaderMenuItemUnservedTest extends IntegrationTestCase
         $folder = $this->createFixtureFactory()->folder(0, ['title' => 'Coming soon', 'visible' => 0]);
 
         self::assertCount(0, $this->render('Folder', $folder->getId())->filter('.HeaderMenuItem'));
+    }
+
+    /**
+     * The real header names its folders with a title and an address, so the entry never asks the API: an unpublished
+     * folder is kept out one step earlier, by the slot of the core, which lists visible folders only.
+     */
+    public function testTheHeaderLeavesAnUnpublishedFolderOfItsSlotOut(): void
+    {
+        $published = $this->createFixtureFactory()->folder(0, ['title' => 'Our shops']);
+        $draft = $this->createFixtureFactory()->folder(0, ['title' => 'Coming soon', 'visible' => 0]);
+
+        ConfigQuery::write(
+            NativeContentSlotResolver::HEADER_MENU_ITEMS_CONFIG,
+            \sprintf('folder:%d,folder:%d', $draft->getId(), $published->getId()),
+        );
+
+        /** @var ComponentRendererInterface $renderer */
+        $renderer = $this->getService('ux.twig_component.component_renderer');
+        $header = new Crawler($renderer->createAndRender('Layouts:Header:Base'));
+
+        self::assertStringContainsString('Our shops', $header->filter('.Header-navigation')->text());
+        self::assertStringNotContainsString('Coming soon', $header->filter('.Header-navigation')->text());
+        self::assertCount(0, $header->filter('.Header-navigation a[href=""]'), 'No entry may link nowhere.');
     }
 
     public function testACategoryTheApiDoesNotKnowIsLeftOut(): void
