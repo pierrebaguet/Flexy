@@ -143,3 +143,6 @@ Currency: Valuta
 'Cancel': 'Annulla'
 'Yes': 'Sì'
 'Delete': 'Elimina'
+Close: Chiudi
+'You seem to be in %country%.': 'Sembra che tu sia in %country%.'
+'See prices for %country%': 'Vedi i prezzi per %country%'

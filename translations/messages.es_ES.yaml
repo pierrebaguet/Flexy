@@ -143,3 +143,6 @@ Currency: Moneda
 'Cancel': 'Cancelar'
 'Yes': 'Sí'
 'Delete': 'Eliminar'
+Close: Cerrar
+'You seem to be in %country%.': 'Parece que estás en %country%.'
+'See prices for %country%': 'Ver precios para %country%'

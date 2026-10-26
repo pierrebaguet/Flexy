@@ -1,0 +1,32 @@
+{# Server-rendered, in the flow of the page above the header: nothing shifts once it is there.
+   The CSRF token is the stateless one (config/packages/csrf.yaml), so the banner survives a shared cache. #}
+{% if this.offered %}
+    {% set country = this.countryName %}
+    {% set switchUrl = this.switchUrl %}
+    {% set token = csrf_token('submit') %}
+    {% set redirect = app.request.requestUri %}
+
+    <section class="CountrySuggestion SnackBar bg-informative-lightest border-informative" aria-labelledby="country-suggestion-message">
+        <div class="SnackBar-content">
+            <span class="SnackBar-icon">{{ ux_icon('info') }}</span>
+            <div class="SnackBar-message" id="country-suggestion-message">{{ 'You seem to be in %country%.'|trans({'%country%': country}) }}</div>
+        </div>
+        <div class="CountrySuggestion-actions">
+            {% if switchUrl %}
+                <twig:Molecules:Button:Base href="{{ switchUrl }}" text="{{ 'See prices for %country%'|trans({'%country%': country}) }}" size="small" />
+            {% else %}
+                <form method="post" action="{{ path('country_suggestion_accept') }}">
+                    <input type="hidden" name="country_id" value="{{ this.countryId }}">
+                    <input type="hidden" name="_token" value="{{ token }}">
+                    <input type="hidden" name="redirect" value="{{ redirect }}">
+                    <twig:Molecules:Button:Base type="submit" text="{{ 'See prices for %country%'|trans({'%country%': country}) }}" size="small" />
+                </form>
+            {% endif %}
+            <form method="post" action="{{ path('country_suggestion_decline') }}">
+                <input type="hidden" name="_token" value="{{ token }}">
+                <input type="hidden" name="redirect" value="{{ redirect }}">
+                <twig:Molecules:Button:Base type="submit" text="{{ 'Close'|trans }}" color="secondary" size="small" />
+            </form>
+        </div>
+    </section>
+{% endif %}

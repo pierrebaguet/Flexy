@@ -91,6 +91,8 @@
 
     <body class="no-js {% block body_class %}{% endblock %}">
         {{ theme_hook('layout.body.top') }}
+        {# Offers the detected country on every page; it renders nothing in the checkout or once answered. #}
+        <twig:Molecules:CountrySuggestion:Base />
         {% block header %}
             <twig:Layouts:Header:Base />
         {% endblock %}

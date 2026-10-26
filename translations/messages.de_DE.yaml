@@ -621,3 +621,5 @@ Too many payments with a saved payment method in a short time. Please try again 
 'Are you sure you want to delete this payment method ?': 'Sind Sie sicher, dass Sie diese Zahlungsmethode löschen möchten?'
 'Are you sure you want to choose this payment method by default ?': 'Sind Sie sicher, dass Sie diese Zahlungsmethode als Standard festlegen möchten?'
 'Expired (valid until %date%)': 'Abgelaufen (gültig bis %date%)'
+'You seem to be in %country%.': 'Sie scheinen sich in %country% zu befinden.'
+'See prices for %country%': 'Preise für %country% anzeigen'

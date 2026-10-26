@@ -1,0 +1,12 @@
+.CountrySuggestion {
+  align-items: center;
+  border-radius: 0;
+  border-width: 0 0 1px;
+}
+
+.CountrySuggestion-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}

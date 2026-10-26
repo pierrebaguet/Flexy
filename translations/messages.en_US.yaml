@@ -644,3 +644,5 @@ Too many payments with a saved payment method in a short time. Please try again 
 'Are you sure you want to delete this payment method ?': 'Are you sure you want to delete this payment method ?'
 'Are you sure you want to choose this payment method by default ?': 'Are you sure you want to choose this payment method by default ?'
 'Expired (valid until %date%)': 'Expired (valid until %date%)'
+'You seem to be in %country%.': 'You seem to be in %country%.'
+'See prices for %country%': 'See prices for %country%'

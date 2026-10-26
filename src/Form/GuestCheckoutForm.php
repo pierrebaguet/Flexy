@@ -271,7 +271,8 @@ class GuestCheckoutForm extends AddressCreateForm
             'required' => true,
             'constraints' => [new NotBlank()],
             'choices' => $this->countryService->getAllCountriesChoiceType(),
-            'data' => $this->countryService->getDefaultCountry()->getId(),
+            // A core without the detection of the visitor country has no preselection.
+            'data' => (method_exists($this->countryService, 'getPreselectedCountry') ? $this->countryService->getPreselectedCountry() : $this->countryService->getDefaultCountry())->getId(),
             'label' => Translator::getInstance()->trans('Country'),
         ]);
 

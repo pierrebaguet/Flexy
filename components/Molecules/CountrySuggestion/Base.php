@@ -1,0 +1,145 @@
+<?php
+
+declare(strict_types=1);
+
+/*
+ * This file is part of the Thelia package.
+ * http://www.thelia.net
+ *
+ * (c) OpenStudio <info@thelia.net>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace FlexyBundle\Components\Molecules\CountrySuggestion;
+
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
+use Thelia\Core\HttpFoundation\Session\Session;
+use Thelia\Domain\Localization\VisitorCountryFacade;
+use Thelia\Model\ConfigQuery;
+use Thelia\Model\Country;
+use Thelia\Model\Lang;
+use Thelia\Model\LangQuery;
+
+/**
+ * Offers the visitor the country the shop detected for them.
+ *
+ * The core detects once per session and remembers the answer: this only reads the
+ * suggestion, so there is nothing to show once the visitor answered, and nothing in the
+ * checkout, where a change of country or of domain would start a second cart.
+ */
+#[AsTwigComponent]
+class Base
+{
+    private bool $resolved = false;
+
+    private ?Country $suggestion = null;
+
+    public function __construct(
+        private readonly RequestStack $requestStack,
+        private readonly Session $session,
+        // Optional: the facade exists only in a core that carries the detection, and the CI of the theme installs the published one.
+        private readonly ?VisitorCountryFacade $visitorCountry = null,
+    ) {
+    }
+
+    public function isOffered(): bool
+    {
+        return null !== $this->suggestion();
+    }
+
+    public function getCountryId(): int
+    {
+        return (int) $this->suggestion()?->getId();
+    }
+
+    /**
+     * The name of the country in the language of the visitor, the first one that has a title.
+     */
+    public function getCountryName(): string
+    {
+        $country = $this->suggestion();
+
+        if (!$country instanceof Country) {
+            return '';
+        }
+
+        $locale = $this->session->getLang()?->getLocale() ?? Lang::getDefaultLanguage()->getLocale();
+        $title = $country->setLocale($locale)->getTitle();
+
+        if (null === $title || '' === $title) {
+            $title = $country->setLocale(Lang::getDefaultLanguage()->getLocale())->getTitle();
+        }
+
+        return (string) ($title ?: $country->getIsoalpha2());
+    }
+
+    /**
+     * When the shop has one domain per language and one of its languages is the one of the
+     * detected country (`nl_BE` for BE) on another domain, accepting is a visit to that
+     * domain: the page being read, asked for in that language, as Organisms/LangSelect does.
+     * The core redirects to the domain of the language from there.
+     */
+    public function getSwitchUrl(): ?string
+    {
+        $country = $this->suggestion();
+        $request = $this->requestStack->getMainRequest();
+
+        if (!$country instanceof Country || !$request instanceof Request || !ConfigQuery::isMultiDomainActivated()) {
+            return null;
+        }
+
+        $currentLocale = $this->session->getLang()?->getLocale();
+        $isoCode = strtoupper((string) $country->getIsoalpha2());
+
+        foreach (LangQuery::create()->filterByActive(1)->filterByVisible(1)->find() as $lang) {
+            $locale = (string) $lang->getLocale();
+
+            if (
+                $locale === $currentLocale
+                || '' === (string) $lang->getUrl()
+                || !str_contains($locale, '_')
+                || strtoupper(substr($locale, (int) strrpos($locale, '_') + 1)) !== $isoCode
+            ) {
+                continue;
+            }
+
+            parse_str((string) $request->getQueryString(), $query);
+            unset($query['lang'], $query['locale']);
+
+            return $request->getBaseUrl().$request->getPathInfo().'?'.http_build_query($query + ['lang' => $locale]);
+        }
+
+        return null;
+    }
+
+    private function suggestion(): ?Country
+    {
+        if ($this->resolved) {
+            return $this->suggestion;
+        }
+
+        $this->resolved = true;
+
+        if (
+            !class_exists(VisitorCountryFacade::class)
+            || null === $this->visitorCountry
+            || $this->isInTheCheckout()
+        ) {
+            return null;
+        }
+
+        return $this->suggestion = $this->visitorCountry->suggestion();
+    }
+
+    private function isInTheCheckout(): bool
+    {
+        $attributes = $this->requestStack->getMainRequest()?->attributes;
+
+        return str_starts_with((string) $attributes?->get('_route', ''), 'checkout_')
+            || str_starts_with((string) $attributes?->get('_view', ''), 'checkout');
+    }
+}

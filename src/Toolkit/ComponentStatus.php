@@ -59,6 +59,9 @@ final class ComponentStatus
             // The gift block of the checkout, shipped with the core feature it renders.
             'Organisms/GiftWrapping' => self::READY,
 
+            // The offer of the country the shop detected, shipped with the core feature it renders.
+            'Molecules/CountrySuggestion' => self::READY,
+
             // The day and slot of a carrier that offers delivery dates, shipped with the core
             // feature it renders.
             'Organisms/DeliveryDatePicker' => self::READY,
