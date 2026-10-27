@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace FlexyBundle\Tests\Component;
 
 use FlexyBundle\Components\Molecules\CountrySuggestion\Base as CountrySuggestion;
+use FlexyBundle\Components\Organisms\LangSelect\Base as LangSelect;
 use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use Propel\Runtime\Propel;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -130,7 +131,7 @@ final class CountrySuggestionRenderTest extends KernelTestCase
     #[IgnoreDeprecations]
     public function testWithoutTheFacadeOfTheCoreNothingIsRendered(): void
     {
-        $component = new CountrySuggestion($this->requestStack, $this->session, null);
+        $component = new CountrySuggestion($this->requestStack, $this->session, self::getContainer()->get(LangSelect::class), null);
 
         self::assertFalse($component->isOffered());
         self::assertSame('', $component->getCountryName());
@@ -169,9 +170,30 @@ final class CountrySuggestionRenderTest extends KernelTestCase
         self::assertSame($expected, $this->component()->getCountryName());
     }
 
+    /**
+     * The link is the one of the language selector for the page being read, in the language
+     * of the detected country.
+     */
+    public function testWithOneDomainPerLanguageAcceptingIsAVisitToTheLanguageOfTheCountry(): void
+    {
+        $this->shopOffersBelgium();
+        ConfigQuery::initCache(['visitor_country_mode' => 'suggest', 'visitor_country_source' => 'header', 'one_domain_foreach_lang' => '1']);
+        $dutchBelgium = (new Lang())->setLocale('nl_BE')->setCode('nb')->setTitle('Nederlands (BE)')->setUrl('https://be.example.test')->setActive(1)->setVisible(1)->setPosition(99);
+        $dutchBelgium->save();
+
+        try {
+            $this->session->setLang((new Lang())->setLocale('en_US'));
+            $url = $this->component()->getSwitchUrl();
+
+            self::assertSame('/sofas.html?lang=nl_BE', $url);
+        } finally {
+            $dutchBelgium->delete();
+        }
+    }
+
     private function component(): CountrySuggestion
     {
-        return new CountrySuggestion($this->requestStack, $this->session, self::getContainer()->get(VisitorCountryFacade::class));
+        return new CountrySuggestion($this->requestStack, $this->session, self::getContainer()->get(LangSelect::class), self::getContainer()->get(VisitorCountryFacade::class));
     }
 
     private function shopOffersBelgium(): void

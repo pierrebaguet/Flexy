@@ -14,10 +14,11 @@ declare(strict_types=1);
 
 namespace FlexyBundle\Components\Molecules\CountrySuggestion;
 
-use Symfony\Component\HttpFoundation\Request;
+use FlexyBundle\Components\Organisms\LangSelect\Base as LangSelect;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
 use Thelia\Core\HttpFoundation\Session\Session;
+use Thelia\Domain\Localization\VisitorCountry\IsoCountryCode;
 use Thelia\Domain\Localization\VisitorCountryFacade;
 use Thelia\Model\ConfigQuery;
 use Thelia\Model\Country;
@@ -42,6 +43,7 @@ class Base
     public function __construct(
         private readonly RequestStack $requestStack,
         private readonly Session $session,
+        private readonly LangSelect $langSelect,
         // Optional: the facade exists only in a core that carries the detection, and the CI of the theme installs the published one.
         private readonly ?VisitorCountryFacade $visitorCountry = null,
     ) {
@@ -95,32 +97,28 @@ class Base
     public function getSwitchUrl(): ?string
     {
         $country = $this->suggestion();
-        $request = $this->requestStack->getMainRequest();
 
-        if (!$country instanceof Country || !$request instanceof Request || !ConfigQuery::isMultiDomainActivated()) {
+        if (!$country instanceof Country || !ConfigQuery::isMultiDomainActivated()) {
             return null;
         }
 
         $currentLocale = $this->session->getLang()?->getLocale();
-        $isoCode = strtoupper((string) $country->getIsoalpha2());
+        $isoCode = IsoCountryCode::normalize($country->getIsoalpha2());
+        $switchUrls = $this->langSelect->getSwitchUrls();
 
         // In a fixed order: with two languages of the country, the same one is offered on every page.
         foreach (LangQuery::create()->filterByActive(1)->filterByVisible(1)->orderByPosition()->orderById()->find() as $lang) {
             $locale = (string) $lang->getLocale();
 
             if (
-                $locale === $currentLocale
-                || '' === (string) $lang->getUrl()
-                || !str_contains($locale, '_')
-                || strtoupper(substr($locale, (int) strrpos($locale, '_') + 1)) !== $isoCode
+                $locale !== $currentLocale
+                && '' !== (string) $lang->getUrl()
+                && null !== $isoCode
+                && IsoCountryCode::ofLocale($locale) === $isoCode
+                && isset($switchUrls[$locale])
             ) {
-                continue;
+                return $switchUrls[$locale];
             }
-
-            parse_str((string) $request->getQueryString(), $query);
-            unset($query['lang'], $query['locale']);
-
-            return $request->getBaseUrl().'/'.ltrim($request->getPathInfo(), '/').'?'.http_build_query($query + ['lang' => $locale]);
         }
 
         return null;
