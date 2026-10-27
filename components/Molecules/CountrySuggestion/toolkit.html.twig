@@ -3,16 +3,16 @@
     <div class="Story-section">
         <h4 class="Story-title">Suggestion</h4>
         <div class="Story-col">
-            <div class="CountrySuggestion SnackBar bg-informative-lightest border-informative">
+            <section class="CountrySuggestion SnackBar bg-informative-lightest border-informative" aria-labelledby="country-suggestion-message">
                 <div class="SnackBar-content">
                     <span class="SnackBar-icon">{{ ux_icon('info') }}</span>
-                    <div class="SnackBar-message">{{ 'You seem to be in %country%.'|trans({'%country%': 'Belgium'}) }}</div>
+                    <div class="SnackBar-message" id="country-suggestion-message">{{ 'You seem to be in %country%.'|trans({'%country%': 'Belgium'}) }}</div>
                 </div>
                 <div class="CountrySuggestion-actions">
                     <twig:Molecules:Button:Base text="{{ 'See prices for %country%'|trans({'%country%': 'Belgium'}) }}" size="small" />
                     <twig:Molecules:Button:Base text="{{ 'Close'|trans }}" color="secondary" size="small" />
                 </div>
-            </div>
+            </section>
         </div>
     </div>
 

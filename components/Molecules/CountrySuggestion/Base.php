@@ -104,7 +104,8 @@ class Base
         $currentLocale = $this->session->getLang()?->getLocale();
         $isoCode = strtoupper((string) $country->getIsoalpha2());
 
-        foreach (LangQuery::create()->filterByActive(1)->filterByVisible(1)->find() as $lang) {
+        // In a fixed order: with two languages of the country, the same one is offered on every page.
+        foreach (LangQuery::create()->filterByActive(1)->filterByVisible(1)->orderByPosition()->orderById()->find() as $lang) {
             $locale = (string) $lang->getLocale();
 
             if (
@@ -119,7 +120,7 @@ class Base
             parse_str((string) $request->getQueryString(), $query);
             unset($query['lang'], $query['locale']);
 
-            return $request->getBaseUrl().$request->getPathInfo().'?'.http_build_query($query + ['lang' => $locale]);
+            return $request->getBaseUrl().'/'.ltrim($request->getPathInfo(), '/').'?'.http_build_query($query + ['lang' => $locale]);
         }
 
         return null;

@@ -9,3 +9,4 @@ framework:
             - thelia_coupon_code
             - thelia_customer_login
             - thelia_product_listing
+            - thelia_country_suggestion

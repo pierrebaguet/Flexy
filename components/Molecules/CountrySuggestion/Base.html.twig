@@ -1,9 +1,9 @@
 {# Server-rendered, in the flow of the page above the header: nothing shifts once it is there.
-   The CSRF token is the stateless one (config/packages/csrf.yaml), so the banner survives a shared cache. #}
+   The CSRF token is the stateless one (`thelia_country_suggestion`, listed in config/packages/csrf.yaml): it is the same for every visitor, so the banner does not depend on a session. #}
 {% if this.offered %}
     {% set country = this.countryName %}
     {% set switchUrl = this.switchUrl %}
-    {% set token = csrf_token('submit') %}
+    {% set token = csrf_token('thelia_country_suggestion') %}
     {% set redirect = app.request.requestUri %}
 
     <section class="CountrySuggestion SnackBar bg-informative-lightest border-informative" aria-labelledby="country-suggestion-message">
@@ -13,13 +13,13 @@
         </div>
         <div class="CountrySuggestion-actions">
             {% if switchUrl %}
-                <twig:Molecules:Button:Base href="{{ switchUrl }}" text="{{ 'See prices for %country%'|trans({'%country%': country}) }}" size="small" />
+                <twig:Molecules:Button:Base href="{{ switchUrl }}" text="{{ 'See prices for %country%'|trans({'%country%': country|e}) }}" size="small" />
             {% else %}
                 <form method="post" action="{{ path('country_suggestion_accept') }}">
                     <input type="hidden" name="country_id" value="{{ this.countryId }}">
                     <input type="hidden" name="_token" value="{{ token }}">
                     <input type="hidden" name="redirect" value="{{ redirect }}">
-                    <twig:Molecules:Button:Base type="submit" text="{{ 'See prices for %country%'|trans({'%country%': country}) }}" size="small" />
+                    <twig:Molecules:Button:Base type="submit" text="{{ 'See prices for %country%'|trans({'%country%': country|e}) }}" size="small" />
                 </form>
             {% endif %}
             <form method="post" action="{{ path('country_suggestion_decline') }}">

@@ -75,6 +75,32 @@ final class CountrySuggestionRenderTest extends KernelTestCase
         self::assertStringContainsString('name="redirect" value="/sofas.html"', $html);
     }
 
+    /**
+     * The button renders its text with the markup of a span allowed, so the name of the
+     * country, which an administrator types, must reach it escaped.
+     */
+    #[IgnoreDeprecations]
+    public function testTheNameOfTheCountryIsEscapedInTheTextOfTheButtons(): void
+    {
+        $this->shopOffersBelgium();
+        $locale = Lang::getDefaultLanguage()->getLocale();
+        $title = CountryI18nQuery::create()->filterById($this->belgiumId())->filterByLocale($locale)->findOne();
+        self::assertNotNull($title);
+        $original = $title->getTitle();
+
+        try {
+            $title->setTitle('<span onmouseover="x">BE</span>')->save();
+
+            $html = $this->render();
+        } finally {
+            $title->setTitle($original)->save();
+        }
+
+        self::assertStringContainsString('See prices for', $html);
+        self::assertStringNotContainsString('<span onmouseover="x">', $html);
+        self::assertStringNotContainsString('onmouseover="x"', $html);
+    }
+
     #[IgnoreDeprecations]
     public function testWithoutAnythingToOfferNothingIsRendered(): void
     {

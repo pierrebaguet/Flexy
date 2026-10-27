@@ -28,13 +28,13 @@ use Thelia\Tools\RedirectUrl;
  * The answer of the visitor to the offer of the country the shop detected.
  *
  * Both actions change what the session remembers, so they are POST-only and carry the
- * stateless CSRF token: the banner is part of every page, including the ones a shared
- * cache serves, and a token bound to a session would be replayed to someone else.
+ * stateless CSRF token of the banner (`thelia_country_suggestion`, declared in
+ * config/packages/csrf.yaml): it checks the origin of the request, not a session.
  */
 #[Route('/country-suggestion', name: 'country_suggestion_')]
 class CountrySuggestionController extends FlexyController
 {
-    private const string TOKEN_ID = 'submit';
+    private const string TOKEN_ID = 'thelia_country_suggestion';
 
     #[Route('/accept', name: 'accept', methods: ['POST'])]
     public function accept(Request $request, CsrfTokenManagerInterface $csrfTokenManager, ?VisitorCountryFacade $visitorCountry = null): RedirectResponse
