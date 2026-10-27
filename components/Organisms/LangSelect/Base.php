@@ -84,7 +84,8 @@ class Base
         parse_str((string) $request->getQueryString(), $query);
         unset($query['lang'], $query['locale']);
 
-        $path = $request->getBaseUrl().$request->getPathInfo();
+        // A path that starts with two slashes would give a link the browser reads as the address of another host.
+        $path = $request->getBaseUrl().'/'.ltrim($request->getPathInfo(), '/');
         $switchUrls = [];
 
         foreach ($this->getLangs() as $lang) {
