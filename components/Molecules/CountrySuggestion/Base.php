@@ -21,6 +21,7 @@ use Thelia\Core\HttpFoundation\Session\Session;
 use Thelia\Domain\Localization\VisitorCountryFacade;
 use Thelia\Model\ConfigQuery;
 use Thelia\Model\Country;
+use Thelia\Model\CountryI18nQuery;
 use Thelia\Model\Lang;
 use Thelia\Model\LangQuery;
 
@@ -67,14 +68,22 @@ class Base
             return '';
         }
 
-        $locale = $this->session->getLang()?->getLocale() ?? Lang::getDefaultLanguage()->getLocale();
-        $title = $country->setLocale($locale)->getTitle();
+        // Read from the table, not through setLocale() on the model: the instance is shared
+        // through the Propel pool and would stay in the language read.
+        $locales = array_unique([
+            $this->session->getLang()?->getLocale() ?? Lang::getDefaultLanguage()->getLocale(),
+            Lang::getDefaultLanguage()->getLocale(),
+        ]);
 
-        if (null === $title || '' === $title) {
-            $title = $country->setLocale(Lang::getDefaultLanguage()->getLocale())->getTitle();
+        foreach ($locales as $locale) {
+            $title = CountryI18nQuery::create()->filterById($country->getId())->filterByLocale($locale)->findOne()?->getTitle();
+
+            if (null !== $title && '' !== $title) {
+                return $title;
+            }
         }
 
-        return (string) ($title ?: $country->getIsoalpha2());
+        return (string) $country->getIsoalpha2();
     }
 
     /**

@@ -16,6 +16,7 @@ namespace FlexyBundle\Tests\Component;
 
 use FlexyBundle\Components\Molecules\CountrySuggestion\Base as CountrySuggestion;
 use PHPUnit\Framework\Attributes\IgnoreDeprecations;
+use Propel\Runtime\Propel;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -25,7 +26,9 @@ use Thelia\Core\HttpFoundation\Session\Session;
 use Thelia\Domain\Localization\VisitorCountry\VisitorCountrySession;
 use Thelia\Domain\Localization\VisitorCountryFacade;
 use Thelia\Model\ConfigQuery;
+use Thelia\Model\CountryI18nQuery;
 use Thelia\Model\CountryQuery;
+use Thelia\Model\Lang;
 
 /**
  * The offer of the detected country is only there while the shop has something to offer,
@@ -106,6 +109,43 @@ final class CountrySuggestionRenderTest extends KernelTestCase
         self::assertFalse($component->isOffered());
         self::assertSame('', $component->getCountryName());
         self::assertNull($component->getSwitchUrl());
+    }
+
+    /**
+     * The country is an instance of the Propel pool, shared with the rest of the request:
+     * naming it must not leave it in the language that was read.
+     */
+    public function testNamingTheCountryLeavesTheSharedInstanceInItsLocale(): void
+    {
+        $this->shopOffersBelgium();
+        Propel::enableInstancePooling();
+
+        try {
+            $shared = CountryQuery::create()->findPk($this->belgiumId());
+            $shared->setLocale('fr_FR');
+            $this->session->setLang((new Lang())->setLocale('en_US'));
+
+            self::assertSame('Belgium', $this->component()->getCountryName());
+            self::assertSame('fr_FR', $shared->getLocale());
+        } finally {
+            Propel::disableInstancePooling();
+        }
+    }
+
+    public function testALanguageWithoutATitleFallsBackToTheDefaultLanguage(): void
+    {
+        $this->shopOffersBelgium();
+        $this->session->setLang((new Lang())->setLocale('xx_XX'));
+
+        $expected = CountryI18nQuery::create()->filterById($this->belgiumId())->filterByLocale(Lang::getDefaultLanguage()->getLocale())->findOne()?->getTitle();
+
+        self::assertNotEmpty($expected, 'The test database has a title of Belgium in the default language.');
+        self::assertSame($expected, $this->component()->getCountryName());
+    }
+
+    private function component(): CountrySuggestion
+    {
+        return new CountrySuggestion($this->requestStack, $this->session, self::getContainer()->get(VisitorCountryFacade::class));
     }
 
     private function shopOffersBelgium(): void
